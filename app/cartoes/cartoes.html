@@ -1,0 +1,197 @@
+<div class="container-fluid py-3">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="page-title"><i class="bi bi-credit-card"></i> Cartões</h2>
+        <button class="btn btn-accent btn-sm" ng-click="vm.abrirModal()" ng-if="$root.espacoAtual">
+            <i class="bi bi-plus-lg"></i> Novo Cartão
+        </button>
+    </div>
+
+    <!-- Sem espaço -->
+    <div class="alert alert-info" ng-if="!$root.espacoAtual">
+        <i class="bi bi-info-circle"></i> Selecione um Espaço Financeiro.
+        <a ui-sref="espacos" class="alert-link">Gerenciar Espaços</a>
+    </div>
+
+    <!-- Alertas -->
+    <div class="alert alert-success alert-dismissible fade show" ng-if="vm.sucesso">
+        <i class="bi bi-check-circle"></i> {{vm.sucesso}}
+        <button type="button" class="btn-close" ng-click="vm.sucesso = null"></button>
+    </div>
+    <div class="alert alert-danger alert-dismissible fade show" ng-if="vm.erro">
+        <i class="bi bi-exclamation-triangle"></i> {{vm.erro}}
+        <button type="button" class="btn-close" ng-click="vm.erro = null"></button>
+    </div>
+
+    <!-- Barra de Pesquisa e Filtros Rápidos -->
+    <div class="app-card mb-3" ng-if="$root.espacoAtual">
+        <div class="row g-2 align-items-center">
+            <div class="col-md-6">
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-search"></i></span>
+                    <input type="text" class="form-control" placeholder="Pesquisar cartões..."
+                           ng-model="vm.busca">
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="btn-group w-100" role="group">
+                    <button class="btn btn-filter" ng-class="{'active': vm.filtroRapido === ''}" ng-click="vm.aplicarFiltroRapido('')">
+                        Todos
+                    </button>
+                    <button class="btn btn-filter" ng-class="{'active': vm.filtroRapido === 'ativo'}" ng-click="vm.aplicarFiltroRapido('ativo')">
+                        <i class="bi bi-check-circle"></i> Ativo
+                    </button>
+                    <button class="btn btn-filter" ng-class="{'active': vm.filtroRapido === 'inativo'}" ng-click="vm.aplicarFiltroRapido('inativo')">
+                        <i class="bi bi-x-circle"></i> Inativo
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading -->
+    <div class="text-center py-4" ng-if="vm.loading">
+        <div class="spinner-border spinner-border-sm text-accent" role="status"></div>
+        <p class="mt-1 text-secondary mb-0" style="font-size: 0.8rem;">Carregando...</p>
+    </div>
+
+    <!-- Listagem -->
+    <div class="app-card" ng-if="!vm.loading && $root.espacoAtual && vm.cartoesFiltrados().length > 0">
+        <div class="table-responsive">
+            <table class="table table-app table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>Nome</th>
+                        <th>Bandeira</th>
+                        <th class="text-end">Limite</th>
+                        <th class="text-center">Fechamento</th>
+                        <th class="text-center">Vencimento</th>
+                        <th class="text-center">Status</th>
+                        <th class="text-end">Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr ng-repeat="cartao in vm.cartoesFiltrados()">
+                        <td class="fw-semibold">{{cartao.nome}}</td>
+                        <td>{{cartao.bandeira}}</td>
+                        <td class="text-end">{{cartao.limite | currency:'R$ '}}</td>
+                        <td class="text-center">Dia {{cartao.diaFechamento}}</td>
+                        <td class="text-center">Dia {{cartao.diaVencimento}}</td>
+                        <td class="text-center">
+                            <span class="badge" ng-class="{'bg-success': cartao.ativo, 'bg-secondary': !cartao.ativo}">
+                                {{cartao.ativo ? 'Ativo' : 'Inativo'}}
+                            </span>
+                        </td>
+                        <td class="text-end text-nowrap">
+                            <button class="btn btn-sm btn-outline-accent me-1" ng-click="vm.verFatura(cartao)" title="Ver Fatura">
+                                <i class="bi bi-receipt"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-accent me-1" ng-click="vm.abrirEdicao(cartao)" title="Editar">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger" ng-click="vm.confirmarExclusao(cartao)" title="Excluir">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Empty State -->
+    <div class="empty-state" ng-if="!vm.loading && vm.cartoesFiltrados().length === 0 && $root.espacoAtual">
+        <i class="bi bi-credit-card"></i>
+        <p>Nenhum cartão encontrado.</p>
+        <button class="btn btn-accent" ng-click="vm.abrirModal()" ng-if="!vm.busca && !vm.filtroRapido">
+            <i class="bi bi-plus-lg"></i> Cadastrar primeiro cartão
+        </button>
+    </div>
+</div>
+
+<!-- Modal Novo/Editar Cartão -->
+<div class="modal fade" id="modalCartao" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content modal-app">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="bi" ng-class="{'bi-plus-circle': !vm.editando, 'bi-pencil': vm.editando}"></i>
+                    {{vm.editando ? 'Editar' : 'Novo'}} Cartão
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form ng-submit="vm.salvar()">
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label">Nome <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" ng-model="vm.novo.nome"
+                                   maxlength="100" placeholder="Ex: Nubank, Inter..." required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Bandeira <span class="text-danger">*</span></label>
+                            <select class="form-select" ng-model="vm.novo.bandeira" required>
+                                <option value="">Selecione...</option>
+                                <option value="VISA">Visa</option>
+                                <option value="MASTERCARD">Mastercard</option>
+                                <option value="ELO">Elo</option>
+                                <option value="AMEX">Amex</option>
+                                <option value="HIPERCARD">Hipercard</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Limite <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text">R$</span>
+                                <input type="number" class="form-control" ng-model="vm.novo.limite"
+                                       step="0.01" min="0" placeholder="0,00" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Dia Fechamento <span class="text-danger">*</span></label>
+                            <input type="number" class="form-control" ng-model="vm.novo.diaFechamento"
+                                   min="1" max="31" placeholder="1-31" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Dia Vencimento <span class="text-danger">*</span></label>
+                            <input type="number" class="form-control" ng-model="vm.novo.diaVencimento"
+                                   min="1" max="31" placeholder="1-31" required>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-accent" ng-disabled="vm.salvando">
+                        <span ng-if="!vm.salvando"><i class="bi bi-check-lg"></i> Salvar</span>
+                        <span ng-if="vm.salvando"><span class="spinner-border spinner-border-sm"></span> Salvando...</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Confirmação de Exclusão -->
+<div class="modal fade" id="modalExcluirCartao" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content modal-app">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="bi bi-exclamation-triangle text-danger"></i> Confirmar Exclusão</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-0">Deseja realmente excluir este cartão?</p>
+                <p class="text-secondary small mb-0" ng-if="vm.cartaoExcluir">
+                    {{vm.cartaoExcluir.nome}}
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-danger" ng-click="vm.excluir()" ng-disabled="vm.excluindo">
+                    <span ng-if="!vm.excluindo"><i class="bi bi-trash"></i> Excluir</span>
+                    <span ng-if="vm.excluindo"><span class="spinner-border spinner-border-sm"></span> Excluindo...</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

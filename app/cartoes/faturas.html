@@ -1,0 +1,140 @@
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <a ui-sref="cartoes" class="btn btn-sm btn-outline-secondary me-2">
+                <i class="bi bi-arrow-left"></i> Voltar
+            </a>
+            <span class="page-title"><i class="bi bi-receipt"></i> Fatura</span>
+            <span class="text-secondary ms-2" ng-if="vm.fatura">— {{vm.fatura.cartaoNome}}</span>
+        </div>
+        <button class="btn btn-sm btn-accent" ng-click="vm.toggleFormCompra()">
+            <i class="bi bi-plus-lg"></i> Nova Compra
+        </button>
+    </div>
+
+    <!-- Navegação de Mês -->
+    <div class="app-card mb-4">
+        <div class="d-flex justify-content-between align-items-center">
+            <button class="btn btn-sm btn-outline-accent" ng-click="vm.mesAnterior()">
+                <i class="bi bi-chevron-left"></i>
+            </button>
+            <h5 class="mb-0">{{vm.mesSelecionado}}/{{vm.anoSelecionado}}</h5>
+            <button class="btn btn-sm btn-outline-accent" ng-click="vm.mesProximo()">
+                <i class="bi bi-chevron-right"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Alertas -->
+    <div class="alert alert-success alert-dismissible" ng-if="vm.sucesso">
+        <i class="bi bi-check-circle"></i> {{vm.sucesso}}
+        <button type="button" class="btn-close" ng-click="vm.sucesso = null"></button>
+    </div>
+    <div class="alert alert-danger alert-dismissible" ng-if="vm.erro">
+        <i class="bi bi-exclamation-triangle"></i> {{vm.erro}}
+        <button type="button" class="btn-close" ng-click="vm.erro = null"></button>
+    </div>
+
+    <!-- Form Nova Compra -->
+    <div class="app-card mb-4" ng-if="vm.mostrarFormCompra">
+        <h5 class="card-title">Nova Compra</h5>
+        <form ng-submit="vm.criarCompra()">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label">Valor Total</label>
+                    <input type="number" class="form-control" ng-model="vm.novaCompra.valor"
+                           step="0.01" min="0.01" placeholder="0,00" required>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Categoria</label>
+                    <select class="form-select" ng-model="vm.novaCompra.categoriaId"
+                            ng-options="cat.id as cat.nome for cat in vm.categorias" required>
+                        <option value="">Selecione...</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Parcelas</label>
+                    <input type="number" class="form-control" ng-model="vm.novaCompra.quantidadeParcelas"
+                           min="1" max="48" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Data da Compra</label>
+                    <input type="date" class="form-control" ng-model="vm.novaCompra.dtCompra" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Descrição</label>
+                    <input type="text" class="form-control" ng-model="vm.novaCompra.descricao"
+                           maxlength="500" placeholder="Descrição da compra">
+                </div>
+                <div class="col-12 text-end">
+                    <button type="button" class="btn btn-sm btn-outline-secondary me-2" ng-click="vm.toggleFormCompra()">Cancelar</button>
+                    <button type="submit" class="btn btn-sm btn-accent" ng-disabled="vm.salvandoCompra">
+                        <span ng-if="!vm.salvandoCompra"><i class="bi bi-check-lg"></i> Registrar</span>
+                        <span ng-if="vm.salvandoCompra"><span class="spinner-border spinner-border-sm"></span></span>
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- Loading -->
+    <div class="text-center py-5" ng-if="vm.loading">
+        <div class="spinner-border text-accent" role="status"></div>
+    </div>
+
+    <!-- Fatura -->
+    <div ng-if="!vm.loading && vm.fatura">
+        <!-- Resumo -->
+        <div class="app-card mb-4">
+            <div class="row text-center">
+                <div class="col-md-4">
+                    <small class="text-secondary">Valor Total</small>
+                    <h4 class="text-danger">{{vm.fatura.valorTotal | currency:'R$ '}}</h4>
+                </div>
+                <div class="col-md-4">
+                    <small class="text-secondary">Vencimento</small>
+                    <h4>{{vm.fatura.dtVencimento}}</h4>
+                </div>
+                <div class="col-md-4">
+                    <small class="text-secondary">Parcelas</small>
+                    <h4>{{vm.fatura.parcelas.length}}</h4>
+                </div>
+            </div>
+        </div>
+
+        <!-- Parcelas -->
+        <div class="app-card">
+            <h5 class="card-title">Parcelas</h5>
+            <div class="table-responsive">
+                <table class="table table-app">
+                    <thead>
+                        <tr>
+                            <th>Descrição</th>
+                            <th>Parcela</th>
+                            <th class="text-end">Valor</th>
+                            <th>Vencimento</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr ng-repeat="parcela in vm.fatura.parcelas">
+                            <td>{{parcela.descricaoCompra || '-'}}</td>
+                            <td>{{parcela.numeroParcela}}x</td>
+                            <td class="text-end">{{parcela.valor | currency:'R$ '}}</td>
+                            <td>{{parcela.dtVencimento}}</td>
+                        </tr>
+                        <tr ng-if="vm.fatura.parcelas.length === 0">
+                            <td colspan="4" class="text-center text-secondary py-4">
+                                Nenhuma parcela nesta fatura.
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="text-center text-secondary py-5" ng-if="!vm.loading && !vm.fatura && !vm.erro">
+        <i class="bi bi-receipt" style="font-size: 3rem;"></i>
+        <p class="mt-2">Nenhuma fatura encontrada para este período.</p>
+    </div>
+</div>

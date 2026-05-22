@@ -1,0 +1,68 @@
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="page-title"><i class="bi bi-building"></i> Espaços Financeiros</h2>
+    </div>
+
+    <!-- Criar Espaço -->
+    <div class="app-card mb-4">
+        <h5 class="card-title">Criar Novo Espaço</h5>
+        <form ng-submit="vm.criar()" class="row g-2 align-items-end">
+            <div class="col-md-8">
+                <label class="form-label">Nome do Espaço</label>
+                <input type="text" class="form-control" ng-model="vm.novoEspaco.nome"
+                       placeholder="Ex: Finanças Pessoais" maxlength="100" required>
+            </div>
+            <div class="col-md-4">
+                <button type="submit" class="btn btn-accent w-100" ng-disabled="vm.criando || !vm.novoEspaco.nome">
+                    <span ng-if="!vm.criando"><i class="bi bi-plus-lg"></i> Criar</span>
+                    <span ng-if="vm.criando"><span class="spinner-border spinner-border-sm"></span> Criando...</span>
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Alertas -->
+    <div class="alert alert-success alert-dismissible" ng-if="vm.sucesso">
+        <i class="bi bi-check-circle"></i> {{vm.sucesso}}
+        <button type="button" class="btn-close" ng-click="vm.sucesso = null"></button>
+    </div>
+    <div class="alert alert-danger alert-dismissible" ng-if="vm.erro">
+        <i class="bi bi-exclamation-triangle"></i> {{vm.erro}}
+        <button type="button" class="btn-close" ng-click="vm.erro = null"></button>
+    </div>
+
+    <!-- Loading -->
+    <div class="text-center py-5" ng-if="vm.loading">
+        <div class="spinner-border text-accent" role="status"></div>
+    </div>
+
+    <!-- Lista de Espaços -->
+    <div class="row g-3" ng-if="!vm.loading">
+        <div class="col-md-6 col-lg-4" ng-repeat="espaco in vm.espacos">
+            <div class="app-card espaco-card" ng-class="{'espaco-ativo': $root.espacoAtual.id === espaco.id}">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <h5 class="mb-1">{{espaco.nome}}</h5>
+                        <small class="text-secondary">Criado por: {{espaco.criador}}</small>
+                    </div>
+                    <span class="badge bg-accent" ng-if="$root.espacoAtual.id === espaco.id">Ativo</span>
+                </div>
+                <div class="mt-3">
+                    <small class="text-secondary">
+                        <i class="bi bi-people"></i> {{espaco.participantes.length}} participante(s)
+                    </small>
+                </div>
+                <button class="btn btn-sm btn-outline-accent mt-3 w-100"
+                        ng-click="vm.selecionar(espaco)"
+                        ng-if="$root.espacoAtual.id !== espaco.id">
+                    <i class="bi bi-check-lg"></i> Selecionar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="text-center text-secondary py-5" ng-if="!vm.loading && vm.espacos.length === 0">
+        <i class="bi bi-building" style="font-size: 3rem;"></i>
+        <p class="mt-2">Nenhum espaço financeiro encontrado. Crie o primeiro acima!</p>
+    </div>
+</div>

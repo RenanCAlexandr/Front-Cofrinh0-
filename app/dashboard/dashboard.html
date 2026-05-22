@@ -1,0 +1,164 @@
+<div class="container-fluid py-3">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="page-title"><i class="bi bi-speedometer2"></i> Dashboard</h2>
+    </div>
+
+    <!-- Sem espaço selecionado -->
+    <div class="alert alert-info" ng-if="!$root.espacoAtual">
+        <i class="bi bi-info-circle"></i> Selecione ou crie um Espaço Financeiro para visualizar o dashboard.
+        <a ui-sref="espacos" class="alert-link">Gerenciar Espaços</a>
+    </div>
+
+    <!-- Seletor de Período -->
+    <div class="periodo-selector mb-3" ng-if="$root.espacoAtual">
+        <button class="btn btn-periodo-nav" ng-click="vm.mesAnterior()" title="Mês anterior">
+            <i class="bi bi-chevron-left"></i>
+        </button>
+        <div class="periodo-info" ng-click="vm.mesAtual()" title="Voltar ao mês atual">
+            <span class="periodo-label">{{vm.periodoLabel}}</span>
+            <span class="periodo-range">{{vm.periodoRange}}</span>
+        </div>
+        <button class="btn btn-periodo-nav" ng-click="vm.mesProximo()" title="Próximo mês">
+            <i class="bi bi-chevron-right"></i>
+        </button>
+    </div>
+
+    <!-- Loading -->
+    <div class="text-center py-4" ng-if="vm.loading">
+        <div class="spinner-border spinner-border-sm text-accent" role="status"></div>
+        <p class="mt-1 text-secondary mb-0" style="font-size: 0.8rem;">Carregando...</p>
+    </div>
+
+    <!-- Erro -->
+    <div class="alert alert-danger" ng-if="vm.erro">
+        <i class="bi bi-exclamation-triangle"></i> {{vm.erro}}
+    </div>
+
+    <!-- Dashboard Content -->
+    <div ng-if="vm.dashboard && !vm.loading">
+        <!-- Cards de Resumo -->
+        <div class="row g-3 mb-3">
+            <div class="col-md-3 col-sm-6">
+                <div class="summary-card card-receitas">
+                    <div class="summary-icon"><i class="bi bi-arrow-up-circle"></i></div>
+                    <div class="summary-info">
+                        <span class="summary-label">Receitas</span>
+                        <span class="summary-value">{{vm.dashboard.receitasMes | currency:'R$ '}}</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6">
+                <div class="summary-card card-despesas">
+                    <div class="summary-icon"><i class="bi bi-arrow-down-circle"></i></div>
+                    <div class="summary-info">
+                        <span class="summary-label">Despesas</span>
+                        <span class="summary-value">{{vm.dashboard.despesasMes | currency:'R$ '}}</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6">
+                <div class="summary-card card-saldo">
+                    <div class="summary-icon"><i class="bi bi-wallet2"></i></div>
+                    <div class="summary-info">
+                        <span class="summary-label">Saldo</span>
+                        <span class="summary-value">{{vm.dashboard.saldoAtual | currency:'R$ '}}</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6">
+                <div class="summary-card card-economia">
+                    <div class="summary-icon"><i class="bi bi-piggy-bank"></i></div>
+                    <div class="summary-info">
+                        <span class="summary-label">Economia</span>
+                        <span class="summary-value">{{vm.dashboard.economiaMes | currency:'R$ '}}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Gastos por Categoria -->
+        <div class="row g-3 mb-3">
+            <div class="col-md-6">
+                <div class="app-card">
+                    <h5 class="card-title"><i class="bi bi-pie-chart"></i> Gastos por Categoria</h5>
+                    <div ng-if="vm.dashboard.gastosPorCategoria.length === 0" class="text-center text-secondary py-3">
+                        Nenhum gasto registrado neste mês.
+                    </div>
+                    <div class="table-responsive" ng-if="vm.dashboard.gastosPorCategoria.length > 0">
+                        <table class="table table-app">
+                            <thead>
+                                <tr>
+                                    <th>Categoria</th>
+                                    <th class="text-end">Valor</th>
+                                    <th class="text-end">%</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr ng-repeat="gasto in vm.dashboard.gastosPorCategoria">
+                                    <td>{{gasto.categoria}}</td>
+                                    <td class="text-end">{{gasto.valor | currency:'R$ '}}</td>
+                                    <td class="text-end">
+                                        <div class="progress-bar-container">
+                                            <div class="progress-bar-fill" ng-style="{'width': gasto.percentual + '%'}"></div>
+                                            <span>{{gasto.percentual | number:1}}%</span>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Insights -->
+            <div class="col-md-6">
+                <div class="app-card">
+                    <h5 class="card-title"><i class="bi bi-lightbulb"></i> Insights</h5>
+                    <div ng-if="!vm.dashboard.insights || vm.dashboard.insights.length === 0" class="text-center text-secondary py-3">
+                        Nenhum insight disponível.
+                    </div>
+                    <ul class="insights-list" ng-if="vm.dashboard.insights.length > 0">
+                        <li ng-repeat="insight in vm.dashboard.insights">
+                            <i class="bi bi-info-circle"></i> {{insight}}
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Evolução Mensal -->
+        <div class="row g-3">
+            <div class="col-12">
+                <div class="app-card">
+                    <h5 class="card-title"><i class="bi bi-graph-up"></i> Evolução Mensal</h5>
+                    <div ng-if="!vm.dashboard.evolucaoMensal || vm.dashboard.evolucaoMensal.length === 0" class="text-center text-secondary py-3">
+                        Dados insuficientes para exibir evolução.
+                    </div>
+                    <div class="table-responsive" ng-if="vm.dashboard.evolucaoMensal.length > 0">
+                        <table class="table table-app">
+                            <thead>
+                                <tr>
+                                    <th>Mês/Ano</th>
+                                    <th class="text-end text-success">Receitas</th>
+                                    <th class="text-end text-danger">Despesas</th>
+                                    <th class="text-end">Saldo</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr ng-repeat="item in vm.dashboard.evolucaoMensal">
+                                    <td>{{item.mes}}/{{item.ano}}</td>
+                                    <td class="text-end text-success">{{item.receitas | currency:'R$ '}}</td>
+                                    <td class="text-end text-danger">{{item.despesas | currency:'R$ '}}</td>
+                                    <td class="text-end" ng-class="{'text-success': item.saldo >= 0, 'text-danger': item.saldo < 0}">
+                                        {{item.saldo | currency:'R$ '}}
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

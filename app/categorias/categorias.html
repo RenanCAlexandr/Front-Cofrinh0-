@@ -1,0 +1,185 @@
+<div class="container-fluid py-3">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="page-title"><i class="bi bi-tags"></i> Categorias</h2>
+        <button class="btn btn-accent btn-sm" ng-click="vm.abrirModal()" ng-if="$root.espacoAtual">
+            <i class="bi bi-plus-lg"></i> Nova Categoria
+        </button>
+    </div>
+
+    <!-- Sem espaço -->
+    <div class="alert alert-info" ng-if="!$root.espacoAtual">
+        <i class="bi bi-info-circle"></i> Selecione um Espaço Financeiro.
+        <a ui-sref="espacos" class="alert-link">Gerenciar Espaços</a>
+    </div>
+
+    <!-- Alertas -->
+    <div class="alert alert-success alert-dismissible fade show" ng-if="vm.sucesso">
+        <i class="bi bi-check-circle"></i> {{vm.sucesso}}
+        <button type="button" class="btn-close" ng-click="vm.sucesso = null"></button>
+    </div>
+    <div class="alert alert-danger alert-dismissible fade show" ng-if="vm.erro">
+        <i class="bi bi-exclamation-triangle"></i> {{vm.erro}}
+        <button type="button" class="btn-close" ng-click="vm.erro = null"></button>
+    </div>
+
+    <!-- Barra de Pesquisa e Filtros Rápidos -->
+    <div class="app-card mb-3" ng-if="$root.espacoAtual">
+        <div class="row g-2 align-items-center">
+            <div class="col-md-5">
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-search"></i></span>
+                    <input type="text" class="form-control" placeholder="Pesquisar categorias..."
+                           ng-model="vm.busca">
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="btn-group w-100" role="group">
+                    <button class="btn btn-filter" ng-class="{'active': vm.filtroRapido === ''}" ng-click="vm.aplicarFiltroRapido('')">
+                        Todos
+                    </button>
+                    <button class="btn btn-filter" ng-class="{'active': vm.filtroRapido === 'ativo'}" ng-click="vm.aplicarFiltroRapido('ativo')">
+                        <i class="bi bi-check-circle"></i> Ativo
+                    </button>
+                    <button class="btn btn-filter" ng-class="{'active': vm.filtroRapido === 'inativo'}" ng-click="vm.aplicarFiltroRapido('inativo')">
+                        <i class="bi bi-x-circle"></i> Inativo
+                    </button>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="btn-group w-100" role="group">
+                    <button class="btn btn-filter" ng-class="{'active': vm.filtroTipo === ''}" ng-click="vm.aplicarFiltroTipo('')">
+                        Ambos
+                    </button>
+                    <button class="btn btn-filter" ng-class="{'active': vm.filtroTipo === 'ENTRADA'}" ng-click="vm.aplicarFiltroTipo('ENTRADA')">
+                        <i class="bi bi-arrow-up-circle"></i>
+                    </button>
+                    <button class="btn btn-filter" ng-class="{'active': vm.filtroTipo === 'SAIDA'}" ng-click="vm.aplicarFiltroTipo('SAIDA')">
+                        <i class="bi bi-arrow-down-circle"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading -->
+    <div class="text-center py-4" ng-if="vm.loading">
+        <div class="spinner-border spinner-border-sm text-accent" role="status"></div>
+        <p class="mt-1 text-secondary mb-0" style="font-size: 0.8rem;">Carregando...</p>
+    </div>
+
+    <!-- Listagem -->
+    <div class="app-card" ng-if="!vm.loading && $root.espacoAtual && vm.categoriasFiltradas().length > 0">
+        <div class="table-responsive">
+            <table class="table table-app table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>Nome</th>
+                        <th>Tipo</th>
+                        <th class="text-center">Status</th>
+                        <th class="text-end">Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr ng-repeat="cat in vm.categoriasFiltradas()">
+                        <!-- Modo Visualização -->
+                        <td ng-if="vm.editando.id !== cat.id">{{cat.nome}}</td>
+                        <td ng-if="vm.editando.id !== cat.id">
+                            <span class="badge" ng-class="{'badge-entrada': cat.tipo === 'ENTRADA', 'badge-saida': cat.tipo === 'SAIDA'}">
+                                {{cat.tipo === 'ENTRADA' ? 'Entrada' : 'Saída'}}
+                            </span>
+                        </td>
+                        <td class="text-center" ng-if="vm.editando.id !== cat.id">
+                            <span class="badge" ng-class="{'bg-success': cat.ativo, 'bg-secondary': !cat.ativo}">
+                                {{cat.ativo ? 'Ativo' : 'Inativo'}}
+                            </span>
+                        </td>
+                        <td class="text-end" ng-if="vm.editando.id !== cat.id">
+                            <button class="btn btn-sm btn-outline-accent me-1" ng-click="vm.iniciarEdicao(cat)" title="Editar">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger" ng-click="vm.excluir(cat)" title="Excluir">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </td>
+                        <!-- Modo Edição Inline -->
+                        <td ng-if="vm.editando.id === cat.id">
+                            <input type="text" class="form-control form-control-sm" ng-model="vm.editando.nome">
+                        </td>
+                        <td ng-if="vm.editando.id === cat.id">
+                            <select class="form-select form-select-sm" ng-model="vm.editando.tipo">
+                                <option value="ENTRADA">Entrada</option>
+                                <option value="SAIDA">Saída</option>
+                            </select>
+                        </td>
+                        <td class="text-center" ng-if="vm.editando.id === cat.id">
+                            <div class="form-check form-switch d-inline-block">
+                                <input class="form-check-input" type="checkbox" ng-model="vm.editando.ativo">
+                            </div>
+                        </td>
+                        <td class="text-end" ng-if="vm.editando.id === cat.id">
+                            <button class="btn btn-sm btn-accent me-1" ng-click="vm.salvarEdicao()">
+                                <i class="bi bi-check-lg"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-secondary" ng-click="vm.cancelarEdicao()">
+                                <i class="bi bi-x-lg"></i>
+                            </button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Empty State -->
+    <div class="empty-state" ng-if="!vm.loading && vm.categoriasFiltradas().length === 0 && $root.espacoAtual">
+        <i class="bi bi-tags"></i>
+        <p>Nenhuma categoria encontrada.</p>
+        <button class="btn btn-accent" ng-click="vm.abrirModal()" ng-if="!vm.busca && !vm.filtroRapido && !vm.filtroTipo">
+            <i class="bi bi-plus-lg"></i> Criar primeira categoria
+        </button>
+    </div>
+</div>
+
+<!-- Modal Nova Categoria -->
+<div class="modal fade" id="modalCategoria" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content modal-app">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="bi bi-plus-circle"></i> Nova Categoria</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form ng-submit="vm.criar()">
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label">Nome <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" ng-model="vm.nova.nome"
+                                   maxlength="100" placeholder="Nome da categoria..." required>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Tipo <span class="text-danger">*</span></label>
+                            <div class="btn-group w-100" role="group">
+                                <input type="radio" class="btn-check" name="tipoCat" id="catEntrada" value="ENTRADA" ng-model="vm.nova.tipo">
+                                <label class="btn btn-outline-success" for="catEntrada">
+                                    <i class="bi bi-arrow-up-circle"></i> Entrada
+                                </label>
+                                <input type="radio" class="btn-check" name="tipoCat" id="catSaida" value="SAIDA" ng-model="vm.nova.tipo">
+                                <label class="btn btn-outline-danger" for="catSaida">
+                                    <i class="bi bi-arrow-down-circle"></i> Saída
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-accent" ng-disabled="vm.salvando">
+                        <span ng-if="!vm.salvando"><i class="bi bi-check-lg"></i> Salvar</span>
+                        <span ng-if="vm.salvando"><span class="spinner-border spinner-border-sm"></span> Salvando...</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

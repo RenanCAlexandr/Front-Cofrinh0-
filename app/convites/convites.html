@@ -1,0 +1,93 @@
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="page-title"><i class="bi bi-people"></i> Convites</h2>
+    </div>
+
+    <!-- Alertas -->
+    <div class="alert alert-success alert-dismissible" ng-if="vm.sucesso">
+        <i class="bi bi-check-circle"></i> {{vm.sucesso}}
+        <button type="button" class="btn-close" ng-click="vm.sucesso = null"></button>
+    </div>
+    <div class="alert alert-danger alert-dismissible" ng-if="vm.erro">
+        <i class="bi bi-exclamation-triangle"></i> {{vm.erro}}
+        <button type="button" class="btn-close" ng-click="vm.erro = null"></button>
+    </div>
+
+    <!-- Convites Pendentes (recebidos) -->
+    <div class="app-card mb-4">
+        <h5 class="card-title"><i class="bi bi-envelope"></i> Convites Recebidos</h5>
+        <div ng-if="vm.convitesPendentes.length === 0" class="text-center text-secondary py-3">
+            Nenhum convite pendente.
+        </div>
+        <div class="list-group" ng-if="vm.convitesPendentes.length > 0">
+            <div class="list-group-item list-group-item-app d-flex justify-content-between align-items-center"
+                 ng-repeat="convite in vm.convitesPendentes">
+                <div>
+                    <strong>{{convite.espacoFinanceiroNome}}</strong>
+                    <br><small class="text-secondary">Status: {{convite.status}}</small>
+                </div>
+                <div ng-if="convite.status === 'PENDENTE'">
+                    <button class="btn btn-sm btn-success me-1" ng-click="vm.aceitar(convite)">
+                        <i class="bi bi-check-lg"></i> Aceitar
+                    </button>
+                    <button class="btn btn-sm btn-outline-danger" ng-click="vm.recusar(convite)">
+                        <i class="bi bi-x-lg"></i> Recusar
+                    </button>
+                </div>
+                <span class="badge" ng-if="convite.status !== 'PENDENTE'"
+                      ng-class="{'bg-success': convite.status === 'ACEITO', 'bg-danger': convite.status === 'RECUSADO'}">
+                    {{convite.status}}
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Enviar Convite -->
+    <div class="app-card mb-4" ng-if="$root.espacoAtual">
+        <h5 class="card-title"><i class="bi bi-send"></i> Enviar Convite — {{$root.espacoAtual.nome}}</h5>
+        <form ng-submit="vm.enviar()" class="row g-2 align-items-end">
+            <div class="col-md-8">
+                <label class="form-label">E-mail do convidado</label>
+                <input type="email" class="form-control" ng-model="vm.novoConvite.email"
+                       placeholder="email@exemplo.com" required>
+            </div>
+            <div class="col-md-4">
+                <button type="submit" class="btn btn-accent w-100" ng-disabled="vm.salvando || !vm.novoConvite.email">
+                    <span ng-if="!vm.salvando"><i class="bi bi-send"></i> Enviar</span>
+                    <span ng-if="vm.salvando"><span class="spinner-border spinner-border-sm"></span></span>
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Loading -->
+    <div class="text-center py-5" ng-if="vm.loading">
+        <div class="spinner-border text-accent" role="status"></div>
+    </div>
+
+    <!-- Convites Enviados -->
+    <div class="app-card" ng-if="!vm.loading && $root.espacoAtual && vm.convitesEnviados.length > 0">
+        <h5 class="card-title"><i class="bi bi-send-check"></i> Convites Enviados — {{$root.espacoAtual.nome}}</h5>
+        <div class="table-responsive">
+            <table class="table table-app">
+                <thead>
+                    <tr>
+                        <th>E-mail</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr ng-repeat="convite in vm.convitesEnviados">
+                        <td>{{convite.emailConvidado}}</td>
+                        <td>
+                            <span class="badge"
+                                  ng-class="{'bg-warning': convite.status === 'PENDENTE', 'bg-success': convite.status === 'ACEITO', 'bg-danger': convite.status === 'RECUSADO'}">
+                                {{convite.status}}
+                            </span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

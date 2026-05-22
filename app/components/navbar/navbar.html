@@ -1,0 +1,131 @@
+<nav class="navbar navbar-expand-lg app-navbar">
+    <div class="container-fluid">
+        <!-- Brand -->
+        <a class="navbar-brand" ui-sref="dashboard">
+            <i class="bi bi-piggy-bank"></i> cofrinh0
+        </a>
+
+        <!-- Espaço Financeiro Selector (always visible) -->
+        <div class="espaco-selector d-none d-md-flex" ng-if="$root.espacos.length > 0">
+            <div class="dropdown">
+                <button class="btn btn-espaco-selector dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="bi bi-building"></i>
+                    <span class="espaco-nome">{{$root.espacoAtual.nome || 'Selecionar Espaço'}}</span>
+                    <i class="bi bi-chevron-down chevron-icon"></i>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-espaco">
+                    <li class="dropdown-header">Espaços Financeiros</li>
+                    <li ng-repeat="espaco in $root.espacos">
+                        <button class="dropdown-item" ng-class="{'active': espaco.id === $root.espacoAtual.id}" ng-click="$root.selecionarEspaco(espaco)">
+                            <i class="bi bi-building me-2"></i> {{espaco.nome}}
+                            <i class="bi bi-check2 ms-auto" ng-if="espaco.id === $root.espacoAtual.id"></i>
+                        </button>
+                    </li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li>
+                        <button class="dropdown-item dropdown-item-create" ng-click="$root.abrirCriarEspaco()">
+                            <i class="bi bi-plus-circle me-2"></i> Novo Espaço
+                        </button>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain">
+            <i class="bi bi-list"></i>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarMain">
+            <!-- Navigation Links -->
+            <ul class="navbar-nav ms-auto nav-main">
+                <li class="nav-item">
+                    <a class="nav-link" ui-sref="dashboard" ui-sref-active="active">
+                        <i class="bi bi-speedometer2"></i> <span>Dashboard</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" ui-sref="movimentacoes" ui-sref-active="active">
+                        <i class="bi bi-arrow-left-right"></i> <span>Movimentações</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" ui-sref="categorias" ui-sref-active="active">
+                        <i class="bi bi-tags"></i> <span>Categorias</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" ui-sref="cartoes" ui-sref-active="active">
+                        <i class="bi bi-credit-card"></i> <span>Cartões</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" ui-sref="convites" ui-sref-active="active">
+                        <i class="bi bi-people"></i> <span>Convites</span>
+                    </a>
+                </li>
+            </ul>
+
+            <!-- Actions -->
+            <ul class="navbar-nav ms-3 nav-actions">
+                <!-- Mobile: Space Selector -->
+                <li class="nav-item dropdown d-md-none" ng-if="$root.espacos.length > 0">
+                    <a class="nav-link dropdown-toggle" role="button" data-bs-toggle="dropdown">
+                        <i class="bi bi-building"></i> {{$root.espacoAtual.nome || 'Espaço'}}
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-espaco">
+                        <li ng-repeat="espaco in $root.espacos">
+                            <button class="dropdown-item" ng-click="$root.selecionarEspaco(espaco)">
+                                {{espaco.nome}}
+                                <i class="bi bi-check2" ng-if="espaco.id === $root.espacoAtual.id"></i>
+                            </button>
+                        </li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <button class="dropdown-item dropdown-item-create" ng-click="$root.abrirCriarEspaco()">
+                                <i class="bi bi-plus-circle me-1"></i> Novo Espaço
+                            </button>
+                        </li>
+                    </ul>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link btn btn-link" ng-click="$root.toggleTheme()" title="Alternar tema">
+                        <i class="bi" ng-class="$root.darkMode ? 'bi-sun' : 'bi-moon'"></i>
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link btn btn-link" ng-click="$root.logout()" title="Sair">
+                        <i class="bi bi-box-arrow-right"></i>
+                    </button>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<!-- Modal Criar Espaço Financeiro -->
+<div class="modal fade" id="modalCriarEspaco" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content modal-app">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="bi bi-plus-circle"></i> Novo Espaço Financeiro</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form ng-submit="$root.criarEspaco()">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Nome <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" ng-model="$root.novoEspaco.nome"
+                               maxlength="100" placeholder="Ex: Financeiro Pessoal, Casal..." required autofocus>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-accent btn-sm" ng-disabled="$root.criandoEspaco">
+                        <span ng-if="!$root.criandoEspaco"><i class="bi bi-check-lg"></i> Criar</span>
+                        <span ng-if="$root.criandoEspaco"><span class="spinner-border spinner-border-sm"></span></span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

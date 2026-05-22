@@ -1,0 +1,62 @@
+<div class="auth-container">
+    <div>
+        <button class="theme-toggle" ng-click="$root.toggleTheme()" title="Alternar tema">
+            <i class="bi" ng-class="$root.darkMode ? 'bi-sun-fill' : 'bi-moon-fill'"></i>
+        </button>
+
+        <div class="auth-card">
+            <div class="auth-logo">
+                <i class="bi bi-piggy-bank"></i> cofrinh0
+            </div>
+            <p class="auth-subtitle">Faça login para gerenciar suas finanças</p>
+
+            <div class="alert alert-danger alert-container" ng-if="vm.error">
+                <i class="bi bi-exclamation-circle"></i> {{vm.error}}
+            </div>
+
+            <form ng-submit="vm.login()" name="loginForm" novalidate>
+                <div class="mb-3">
+                    <label class="form-label" for="email">E-mail</label>
+                    <input type="email"
+                           class="form-control"
+                           id="email"
+                           ng-model="vm.credentials.email"
+                           placeholder="seu@email.com"
+                           required
+                           autofocus>
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label" for="senha">Senha</label>
+                    <div class="input-group">
+                        <input type="{{vm.showPassword ? 'text' : 'password'}}"
+                               class="form-control"
+                               id="senha"
+                               ng-model="vm.credentials.senha"
+                               placeholder="Sua senha"
+                               required>
+                        <button class="btn btn-outline-secondary"
+                                type="button"
+                                ng-click="vm.togglePassword()">
+                            <i class="bi" ng-class="vm.showPassword ? 'bi-eye-slash' : 'bi-eye'"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <button type="submit"
+                        class="btn btn-accent"
+                        ng-disabled="loginForm.$invalid || vm.loading">
+                    <span ng-if="!vm.loading">Entrar</span>
+                    <span ng-if="vm.loading">
+                        <span class="spinner-border spinner-border-sm"></span> Entrando...
+                    </span>
+                </button>
+            </form>
+
+            <div class="text-center mt-3">
+                <span style="color: var(--text-secondary)">Não tem conta?</span>
+                <a ui-sref="cadastro" class="auth-link">Cadastre-se</a>
+            </div>
+        </div>
+    </div>
+</div>

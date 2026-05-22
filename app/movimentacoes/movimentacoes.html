@@ -1,0 +1,260 @@
+<div class="container-fluid py-3">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="page-title"><i class="bi bi-arrow-left-right"></i> Movimentações</h2>
+        <button class="btn btn-accent btn-sm" ng-click="vm.abrirModal()" ng-if="$root.espacoAtual">
+            <i class="bi bi-plus-lg"></i> Nova Movimentação
+        </button>
+    </div>
+
+    <!-- Sem espaço -->
+    <div class="alert alert-info" ng-if="!$root.espacoAtual">
+        <i class="bi bi-info-circle"></i> Selecione um Espaço Financeiro.
+        <a ui-sref="espacos" class="alert-link">Gerenciar Espaços</a>
+    </div>
+
+    <!-- Alertas -->
+    <div class="alert alert-success alert-dismissible fade show" ng-if="vm.sucesso">
+        <i class="bi bi-check-circle"></i> {{vm.sucesso}}
+        <button type="button" class="btn-close" ng-click="vm.sucesso = null"></button>
+    </div>
+    <div class="alert alert-danger alert-dismissible fade show" ng-if="vm.erro">
+        <i class="bi bi-exclamation-triangle"></i> {{vm.erro}}
+        <button type="button" class="btn-close" ng-click="vm.erro = null"></button>
+    </div>
+
+    <!-- Barra de Pesquisa e Filtros Rápidos -->
+    <div class="app-card mb-3" ng-if="$root.espacoAtual">
+        <div class="row g-2 align-items-center">
+            <div class="col-md-5">
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-search"></i></span>
+                    <input type="text" class="form-control" placeholder="Pesquisar por descrição..."
+                           ng-model="vm.busca" ng-change="vm.pesquisar()">
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="btn-group w-100" role="group">
+                    <button class="btn btn-filter" ng-class="{'active': vm.filtroRapido === ''}" ng-click="vm.aplicarFiltroRapido('')">
+                        Todos
+                    </button>
+                    <button class="btn btn-filter" ng-class="{'active': vm.filtroRapido === 'ENTRADA'}" ng-click="vm.aplicarFiltroRapido('ENTRADA')">
+                        <i class="bi bi-arrow-up-circle"></i> Entrada
+                    </button>
+                    <button class="btn btn-filter" ng-class="{'active': vm.filtroRapido === 'SAIDA'}" ng-click="vm.aplicarFiltroRapido('SAIDA')">
+                        <i class="bi bi-arrow-down-circle"></i> Saída
+                    </button>
+                </div>
+            </div>
+            <div class="col-md-3 text-end">
+                <button class="btn btn-sm btn-outline-accent" ng-click="vm.toggleFiltroAvancado()">
+                    <i class="bi bi-sliders"></i> Filtros Avançados
+                </button>
+            </div>
+        </div>
+
+        <!-- Filtros Avançados -->
+        <div class="filtros-avancados mt-2 pt-2" ng-if="vm.mostrarFiltroAvancado">
+            <div class="row g-2">
+                <div class="col-md-3">
+                    <label class="form-label">Data Início</label>
+                    <input type="date" class="form-control" ng-model="vm.filtro.dtInicio">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Data Fim</label>
+                    <input type="date" class="form-control" ng-model="vm.filtro.dtFim">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Categoria</label>
+                    <select class="form-select" ng-model="vm.filtro.categoriaId"
+                            ng-options="cat.id as cat.nome for cat in vm.categorias">
+                        <option value="">Todas</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Valor Mín. / Máx.</label>
+                    <div class="input-group">
+                        <input type="number" class="form-control" ng-model="vm.filtro.valorMinimo" placeholder="Mín" step="0.01">
+                        <input type="number" class="form-control" ng-model="vm.filtro.valorMaximo" placeholder="Máx" step="0.01">
+                    </div>
+                </div>
+                <div class="col-12 text-end">
+                    <button class="btn btn-sm btn-outline-secondary me-2" ng-click="vm.limparFiltro()">
+                        <i class="bi bi-x-lg"></i> Limpar
+                    </button>
+                    <button class="btn btn-sm btn-accent" ng-click="vm.filtrar()">
+                        <i class="bi bi-funnel"></i> Aplicar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading -->
+    <div class="text-center py-4" ng-if="vm.loading">
+        <div class="spinner-border spinner-border-sm text-accent" role="status"></div>
+        <p class="mt-1 text-secondary mb-0" style="font-size: 0.8rem;">Carregando...</p>
+    </div>
+
+    <!-- Listagem -->
+    <div class="app-card" ng-if="!vm.loading && $root.espacoAtual && vm.movimentacoesFiltradas().length > 0">
+        <div class="table-responsive">
+            <table class="table table-app table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>Data</th>
+                        <th>Descrição</th>
+                        <th>Categoria</th>
+                        <th>Responsável</th>
+                        <th class="text-end">Valor</th>
+                        <th class="text-center">Tipo</th>
+                        <th class="text-center">Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr ng-repeat="mov in vm.movimentacoesFiltradas()">
+                        <td class="text-nowrap">{{vm.formatarData(mov.dtMovimentacao)}}</td>
+                        <td>{{mov.descricao || '—'}}</td>
+                        <td><span class="badge badge-categoria">{{mov.categoria}}</span></td>
+                        <td>{{mov.responsavel}}</td>
+                        <td class="text-end fw-semibold" ng-class="{'text-success': mov.tipo === 'ENTRADA', 'text-danger': mov.tipo === 'SAIDA'}">
+                            {{mov.valor | currency:'R$ '}}
+                        </td>
+                        <td class="text-center">
+                            <span class="badge" ng-class="{'badge-entrada': mov.tipo === 'ENTRADA', 'badge-saida': mov.tipo === 'SAIDA'}">
+                                {{mov.tipo === 'ENTRADA' ? 'Entrada' : 'Saída'}}
+                            </span>
+                        </td>
+                        <td class="text-center text-nowrap">
+                            <button class="btn btn-sm btn-outline-accent me-1" ng-click="vm.abrirEdicao(mov)" title="Editar">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger" ng-click="vm.confirmarExclusao(mov)" title="Excluir">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Paginação -->
+        <div class="d-flex justify-content-between align-items-center mt-2 pt-2 border-top" ng-if="vm.paginacao.totalPages > 1">
+            <small class="text-secondary">
+                {{vm.paginacao.totalElements}} registro(s) — Página {{vm.paginacao.page + 1}} de {{vm.paginacao.totalPages}}
+            </small>
+            <nav>
+                <ul class="pagination pagination-sm mb-0">
+                    <li class="page-item" ng-class="{'disabled': vm.paginacao.page === 0}">
+                        <button class="page-link" ng-click="vm.irPagina(vm.paginacao.page - 1)" ng-disabled="vm.paginacao.page === 0">
+                            <i class="bi bi-chevron-left"></i>
+                        </button>
+                    </li>
+                    <li class="page-item" ng-class="{'disabled': vm.paginacao.page >= vm.paginacao.totalPages - 1}">
+                        <button class="page-link" ng-click="vm.irPagina(vm.paginacao.page + 1)" ng-disabled="vm.paginacao.page >= vm.paginacao.totalPages - 1">
+                            <i class="bi bi-chevron-right"></i>
+                        </button>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+
+    <!-- Empty State -->
+    <div class="empty-state" ng-if="!vm.loading && vm.movimentacoesFiltradas().length === 0 && $root.espacoAtual">
+        <i class="bi bi-inbox"></i>
+        <p>Nenhuma movimentação encontrada.</p>
+        <button class="btn btn-accent" ng-click="vm.abrirModal()" ng-if="!vm.busca && !vm.filtroRapido">
+            <i class="bi bi-plus-lg"></i> Registrar primeira movimentação
+        </button>
+    </div>
+</div>
+
+<!-- Modal Nova/Editar Movimentação -->
+<div class="modal fade" id="modalMovimentacao" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content modal-app">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="bi" ng-class="{'bi-plus-circle': !vm.editando, 'bi-pencil': vm.editando}"></i>
+                    {{vm.editando ? 'Editar' : 'Nova'}} Movimentação
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form ng-submit="vm.salvar()">
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <div class="btn-group w-100" role="group">
+                                <input type="radio" class="btn-check" name="tipoMov" id="tipoEntrada" value="ENTRADA" ng-model="vm.nova.tipo">
+                                <label class="btn btn-outline-success" for="tipoEntrada">
+                                    <i class="bi bi-arrow-up-circle"></i> Entrada
+                                </label>
+                                <input type="radio" class="btn-check" name="tipoMov" id="tipoSaida" value="SAIDA" ng-model="vm.nova.tipo">
+                                <label class="btn btn-outline-danger" for="tipoSaida">
+                                    <i class="bi bi-arrow-down-circle"></i> Saída
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Valor <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text">R$</span>
+                                <input type="number" class="form-control" ng-model="vm.nova.valor"
+                                       step="0.01" min="0.01" placeholder="0,00" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Data <span class="text-danger">*</span></label>
+                            <input type="date" class="form-control" ng-model="vm.nova.dtMovimentacao" required>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Categoria <span class="text-danger">*</span></label>
+                            <select class="form-select" ng-model="vm.nova.categoriaId"
+                                    ng-options="cat.id as cat.nome for cat in vm.categoriasPorTipo(vm.nova.tipo)" required>
+                                <option value="">Selecione uma categoria...</option>
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Descrição</label>
+                            <input type="text" class="form-control" ng-model="vm.nova.descricao"
+                                   maxlength="500" placeholder="Descrição opcional...">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-accent" ng-disabled="vm.salvando">
+                        <span ng-if="!vm.salvando"><i class="bi bi-check-lg"></i> Salvar</span>
+                        <span ng-if="vm.salvando"><span class="spinner-border spinner-border-sm"></span> Salvando...</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Confirmação de Exclusão -->
+<div class="modal fade" id="modalExcluirMovimentacao" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content modal-app">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="bi bi-exclamation-triangle text-danger"></i> Confirmar Exclusão</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-0">Deseja realmente excluir esta movimentação?</p>
+                <p class="text-secondary small mb-0" ng-if="vm.movimentacaoExcluir">
+                    {{vm.movimentacaoExcluir.descricao || 'Sem descrição'}} — {{vm.movimentacaoExcluir.valor | currency:'R$ '}}
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-danger" ng-click="vm.excluir()" ng-disabled="vm.excluindo">
+                    <span ng-if="!vm.excluindo"><i class="bi bi-trash"></i> Excluir</span>
+                    <span ng-if="vm.excluindo"><span class="spinner-border spinner-border-sm"></span> Excluindo...</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

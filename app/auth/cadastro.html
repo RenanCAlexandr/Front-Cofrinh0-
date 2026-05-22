@@ -1,0 +1,91 @@
+<div class="auth-container">
+    <div>
+        <button class="theme-toggle" ng-click="$root.toggleTheme()" title="Alternar tema">
+            <i class="bi" ng-class="$root.darkMode ? 'bi-sun-fill' : 'bi-moon-fill'"></i>
+        </button>
+
+        <div class="auth-card">
+            <div class="auth-logo">
+                <i class="bi bi-piggy-bank"></i> cofrinh0
+            </div>
+            <p class="auth-subtitle">Crie sua conta e comece a organizar suas finanças</p>
+
+            <div class="alert alert-danger alert-container" ng-if="vm.error">
+                <i class="bi bi-exclamation-circle"></i> {{vm.error}}
+            </div>
+
+            <div class="alert alert-success alert-container" ng-if="vm.success">
+                <i class="bi bi-check-circle"></i> {{vm.success}}
+            </div>
+
+            <form ng-submit="vm.cadastrar()" name="cadastroForm" novalidate>
+                <div class="mb-3">
+                    <label class="form-label" for="nome">Nome</label>
+                    <input type="text"
+                           class="form-control"
+                           id="nome"
+                           ng-model="vm.usuario.nome"
+                           placeholder="Seu nome completo"
+                           required
+                           minlength="3"
+                           autofocus>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label" for="email">E-mail</label>
+                    <input type="email"
+                           class="form-control"
+                           id="email"
+                           ng-model="vm.usuario.email"
+                           placeholder="seu@email.com"
+                           required>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label" for="senha">Senha</label>
+                    <div class="input-group">
+                        <input type="{{vm.showPassword ? 'text' : 'password'}}"
+                               class="form-control"
+                               id="senha"
+                               ng-model="vm.usuario.senha"
+                               placeholder="Mínimo 6 caracteres"
+                               required
+                               minlength="6">
+                        <button class="btn btn-outline-secondary"
+                                type="button"
+                                ng-click="vm.togglePassword()">
+                            <i class="bi" ng-class="vm.showPassword ? 'bi-eye-slash' : 'bi-eye'"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label" for="confirmarSenha">Confirmar senha</label>
+                    <input type="{{vm.showPassword ? 'text' : 'password'}}"
+                           class="form-control"
+                           id="confirmarSenha"
+                           ng-model="vm.confirmarSenha"
+                           placeholder="Repita a senha"
+                           required>
+                    <small class="text-danger" ng-if="vm.confirmarSenha && !vm.senhasConferem()">
+                        As senhas não conferem.
+                    </small>
+                </div>
+
+                <button type="submit"
+                        class="btn btn-accent"
+                        ng-disabled="cadastroForm.$invalid || !vm.senhasConferem() || vm.loading">
+                    <span ng-if="!vm.loading">Criar conta</span>
+                    <span ng-if="vm.loading">
+                        <span class="spinner-border spinner-border-sm"></span> Cadastrando...
+                    </span>
+                </button>
+            </form>
+
+            <div class="text-center mt-3">
+                <span style="color: var(--text-secondary)">Já tem conta?</span>
+                <a ui-sref="login" class="auth-link">Faça login</a>
+            </div>
+        </div>
+    </div>
+</div>
