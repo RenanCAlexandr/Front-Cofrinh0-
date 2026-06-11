@@ -9,7 +9,7 @@
     appConfig.$inject = ['$stateProvider', '$urlRouterProvider', '$httpProvider'];
 
     function appConfig($stateProvider, $urlRouterProvider, $httpProvider) {
-        $urlRouterProvider.otherwise('/dashboard');
+        $urlRouterProvider.otherwise('/login');
 
         $stateProvider
             .state('login', {
@@ -146,6 +146,16 @@
             $state.go('login');
         };
 
+        // Carregar espaços ao iniciar se logado
+        if (AuthService.isAuthenticated()) {
+            EspacoService.listar().then(function (espacos) {
+                $rootScope.espacos = espacos;
+                if (!$rootScope.espacoAtual && espacos.length > 0) {
+                    $rootScope.selecionarEspaco(espacos[0]);
+                }
+            });
+        }
+
         $rootScope.$on('$stateChangeStart', function (event, toState) {
             var publicStates = ['login', 'cadastro'];
             var isPublic = publicStates.indexOf(toState.name) !== -1;
@@ -157,6 +167,7 @@
         });
 
         $rootScope.$on('$stateChangeSuccess', function () {
+            // Recarregar espaços se ainda estiver vazio mas estiver logado
             if (AuthService.isAuthenticated() && $rootScope.espacos.length === 0) {
                 EspacoService.listar().then(function (espacos) {
                     $rootScope.espacos = espacos;
