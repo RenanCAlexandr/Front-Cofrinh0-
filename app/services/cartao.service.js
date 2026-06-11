@@ -16,6 +16,7 @@
             editar: editar,
             excluir: excluir,
             criarCompra: criarCompra,
+            excluirCompra: excluirCompra,
             obterFatura: obterFatura
         };
 
@@ -41,6 +42,10 @@
         function criarCompra(espacoId, cartaoId, compra) {
             return $http.post(API_URL + '/espacos-financeiros/' + espacoId + '/cartoes/' + cartaoId + '/compras', compra)
                 .then(function (r) { return r.data; });
+        }
+
+        function excluirCompra(espacoId, cartaoId, compraId) {
+            return $http.delete(API_URL + '/espacos-financeiros/' + espacoId + '/cartoes/' + cartaoId + '/compras/' + compraId);
         }
 
         function obterFatura(espacoId, cartaoId, mes, ano) {

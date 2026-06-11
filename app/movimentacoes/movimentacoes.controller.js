@@ -83,6 +83,8 @@
         function abrirModal() {
             vm.nova = resetNova();
             vm.editando = false;
+            // Garantir que a data seja setada corretamente
+            vm.nova.dtMovimentacao = new Date().toISOString().substring(0, 10);
             vm.editandoId = null;
             vm.erro = null;
             if (!vm.modal) {
@@ -247,14 +249,21 @@
 
         function formatarDataInput(data) {
             if (!data) return new Date().toISOString().substring(0, 10);
+            // Se for string YYYY-MM-DD, retornar diretamente
+            if (typeof data === 'string' && data.match(/^\d{4}-\d{2}-\d{2}$/)) {
+                return data;
+            }
             // Se for timestamp em milissegundos
             if (typeof data === 'number' && data > 10000000000) {
                 return new Date(data).toISOString().substring(0, 10);
             }
-            // Se for string, extrair apenas YYYY-MM-DD
+            // Se for string com mais formato, extrair apenas YYYY-MM-DD
             if (typeof data === 'string') {
                 if (data.length >= 10) {
-                    return data.substring(0, 10);
+                    var formatted = data.substring(0, 10);
+                    if (formatted.match(/^\d{4}-\d{2}-\d{2}$/)) {
+                        return formatted;
+                    }
                 }
             }
             return new Date().toISOString().substring(0, 10);

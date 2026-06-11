@@ -74,10 +74,11 @@
             vm.editandoId = cartao.id;
             vm.novo = {
                 nome: cartao.nome,
-                bandeira: cartao.bandeira || '',
+                bandeira: cartao.bandeira,
                 limite: cartao.limite,
                 diaFechamento: cartao.diaFechamento,
-                diaVencimento: cartao.diaVencimento
+                diaVencimento: cartao.diaVencimento,
+                ativo: cartao.ativo !== undefined ? cartao.ativo : true
             };
             vm.erro = null;
             if (!vm.modal) {
@@ -87,12 +88,18 @@
         }
 
         function salvar() {
-            if (!vm.novo.nome || !vm.novo.limite || !vm.novo.diaFechamento || !vm.novo.diaVencimento) return;
+            if (!vm.novo.nome || !vm.novo.bandeira || !vm.novo.limite || !vm.novo.diaFechamento || !vm.novo.diaVencimento) return;
             vm.salvando = true;
             vm.erro = null;
 
-            var payload = angular.copy(vm.novo);
-            payload.limite = parseFloat(payload.limite);
+            var payload = {
+                nome: vm.novo.nome,
+                bandeira: vm.novo.bandeira,
+                limite: parseFloat(vm.novo.limite),
+                diaFechamento: parseInt(vm.novo.diaFechamento),
+                diaVencimento: parseInt(vm.novo.diaVencimento),
+                ativo: vm.novo.ativo !== undefined ? vm.novo.ativo : true
+            };
 
             var promise;
             if (vm.editando) {
@@ -172,7 +179,7 @@
         }
 
         function resetNovo() {
-            return { nome: '', bandeira: '', limite: null, diaFechamento: null, diaVencimento: null };
+            return { nome: '', bandeira: '', limite: null, diaFechamento: null, diaVencimento: null, ativo: true };
         }
 
         $rootScope.$on('espacoAlterado', function () {

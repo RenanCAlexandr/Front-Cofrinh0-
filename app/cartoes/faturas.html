@@ -93,7 +93,7 @@
                 </div>
                 <div class="col-md-4">
                     <small class="text-secondary">Vencimento</small>
-                    <h4>{{vm.fatura.dtVencimento}}</h4>
+                    <h4>{{vm.fatura.dtVencimento | date:'dd/MM/yyyy'}}</h4>
                 </div>
                 <div class="col-md-4">
                     <small class="text-secondary">Parcelas</small>
@@ -113,6 +113,7 @@
                             <th>Parcela</th>
                             <th class="text-end">Valor</th>
                             <th>Vencimento</th>
+                            <th class="text-center">Ações</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -120,7 +121,13 @@
                             <td>{{parcela.descricaoCompra || '-'}}</td>
                             <td>{{parcela.numeroParcela}}x</td>
                             <td class="text-end">{{parcela.valor | currency:'R$ '}}</td>
-                            <td>{{parcela.dtVencimento}}</td>
+                            <td>{{parcela.dtVencimento | date:'dd/MM/yyyy'}}</td>
+                            <td class="text-center">
+                                <button class="btn btn-sm btn-outline-danger" ng-click="vm.excluirCompra(parcela)" 
+                                        title="Excluir compra" ng-if="parcela.numeroParcela === 1">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </td>
                         </tr>
                         <tr ng-if="vm.fatura.parcelas.length === 0">
                             <td colspan="4" class="text-center text-secondary py-4">

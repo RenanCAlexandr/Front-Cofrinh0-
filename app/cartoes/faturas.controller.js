@@ -27,6 +27,7 @@
 
         vm.carregarFatura = carregarFatura;
         vm.criarCompra = criarCompra;
+        vm.excluirCompra = excluirCompra;
         vm.toggleFormCompra = toggleFormCompra;
         vm.mesAnterior = mesAnterior;
         vm.mesProximo = mesProximo;
@@ -82,8 +83,27 @@
                 });
         }
 
+        function excluirCompra(parcela) {
+            if (!confirm('Tem certeza que deseja excluir esta compra? Todas as parcelas serão removidas.')) {
+                return;
+            }
+
+            CartaoService.excluirCompra($rootScope.espacoAtual.id, vm.cartaoId, parcela.compraId)
+                .then(function () {
+                    vm.sucesso = 'Compra excluída com sucesso!';
+                    carregarFatura();
+                })
+                .catch(function (err) {
+                    vm.erro = err.data && err.data.mensagem ? err.data.mensagem : 'Erro ao excluir compra.';
+                });
+        }
+
         function toggleFormCompra() {
             vm.mostrarFormCompra = !vm.mostrarFormCompra;
+            // Resetar data para hoje quando abre o formulário
+            if (vm.mostrarFormCompra && !vm.novaCompra.dtCompra) {
+                vm.novaCompra.dtCompra = new Date().toISOString().substring(0, 10);
+            }
         }
 
         function mesAnterior() {
