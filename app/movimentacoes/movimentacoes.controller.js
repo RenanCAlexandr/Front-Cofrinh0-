@@ -44,6 +44,7 @@
         vm.categoriasPorTipo = categoriasPorTipo;
         vm.movimentacoesFiltradas = movimentacoesFiltradas;
         vm.formatarData = formatarData;
+        vm.formatarDataInput = formatarDataInput;
 
         init();
 
@@ -97,7 +98,7 @@
                 categoriaId: mov.categoriaId,
                 valor: mov.valor,
                 tipo: mov.tipo,
-                dtMovimentacao: mov.dtMovimentacao,
+                dtMovimentacao: formatarDataInput(mov.dtMovimentacao),
                 descricao: mov.descricao || ''
             };
             vm.erro = null;
@@ -244,8 +245,23 @@
             return data;
         }
 
+        function formatarDataInput(data) {
+            if (!data) return new Date().toISOString().substring(0, 10);
+            // Se for timestamp em milissegundos
+            if (typeof data === 'number' && data > 10000000000) {
+                return new Date(data).toISOString().substring(0, 10);
+            }
+            // Se for string, extrair apenas YYYY-MM-DD
+            if (typeof data === 'string') {
+                if (data.length >= 10) {
+                    return data.substring(0, 10);
+                }
+            }
+            return new Date().toISOString().substring(0, 10);
+        }
+
         function resetNova() {
-            return { categoriaId: null, valor: null, tipo: 'SAIDA', dtMovimentacao: new Date().toISOString().substring(0, 10), descricao: '' };
+            return { categoriaId: null, valor: null, tipo: 'SAIDA', dtMovimentacao: formatarDataInput(null), descricao: '' };
         }
 
         $rootScope.$on('espacoAlterado', function () {
