@@ -118,10 +118,11 @@
                             </div>
                         </td>
                         <td class="text-end" ng-if="vm.editando.id === cat.id">
-                            <button class="btn btn-sm btn-accent me-1" ng-click="vm.salvarEdicao()">
-                                <i class="bi bi-check-lg"></i>
+                            <button class="btn btn-sm btn-accent me-1" ng-click="vm.salvarEdicao()" ng-disabled="vm.salvando">
+                                <span ng-if="!vm.salvando"><i class="bi bi-check-lg"></i></span>
+                                <span ng-if="vm.salvando"><span class="spinner-border spinner-border-sm"></span></span>
                             </button>
-                            <button class="btn btn-sm btn-outline-secondary" ng-click="vm.cancelarEdicao()">
+                            <button class="btn btn-sm btn-outline-secondary" ng-click="vm.cancelarEdicao()" ng-disabled="vm.salvando">
                                 <i class="bi bi-x-lg"></i>
                             </button>
                         </td>

@@ -90,14 +90,26 @@
 
         function salvarEdicao() {
             if (!vm.editando.nome) return;
-            CategoriaService.editar($rootScope.espacoAtual.id, vm.editando.id, vm.editando)
+            vm.salvando = true;
+            vm.erro = null;
+            
+            // Preparar payload sem o id
+            var payload = {
+                nome: vm.editando.nome,
+                tipo: vm.editando.tipo,
+                ativo: vm.editando.ativo
+            };
+            
+            CategoriaService.editar($rootScope.espacoAtual.id, vm.editando.id, payload)
                 .then(function () {
-                    vm.sucesso = 'Categoria atualizada!';
+                    vm.sucesso = 'Categoria atualizada com sucesso!';
                     vm.editando = {};
+                    vm.salvando = false;
                     carregarCategorias();
                 })
                 .catch(function (err) {
                     vm.erro = err.data && err.data.mensagem ? err.data.mensagem : 'Erro ao editar categoria.';
+                    vm.salvando = false;
                 });
         }
 
